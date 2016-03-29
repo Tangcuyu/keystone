@@ -1,49 +1,55 @@
 var async = require('async');
+var assign = require('object-assign');
 
-module.exports = function(req, res) {
+module.exports = function (req, res) {
 	var where = {};
 	var filters = req.query.filters;
 	if (filters && typeof filters === 'string') {
 		try { filters = JSON.parse(req.query.filters); }
-		catch(e) { } // eslint-disable-line no-empty
+		catch (e) { } // eslint-disable-line no-empty
 	}
 	if (typeof filters === 'object') {
-		req.list.addFiltersToQuery(filters, where);
+		assign(where, req.list.addFiltersToQuery(filters));
 	}
 	if (req.query.search) {
-		req.list.addSearchToQuery(req.query.search, where);
+		assign(where, req.list.addSearchToQuery(req.query.search));
 	}
 	var query = req.list.model.find(where);
 	if (req.query.populate) {
 		query.populate(req.query.populate);
 	}
 	if (req.query.expandRelationshipFields && req.query.expandRelationshipFields !== 'false') {
-		req.list.relationshipFields.forEach(function(i) {
+		req.list.relationshipFields.forEach(function (i) {
 			query.populate(i.path);
 		});
 	}
 	var sort = req.list.expandSort(req.query.sort);
-	async.series({
-		count: function(next) {
+	async.waterfall([
+		function (next) {
 			query.count(next);
 		},
-		items: function(next) {
+		function (count, next) {
+			var skipCount = Number(req.query.skip) || 0;
 			query.find();
 			query.limit(Number(req.query.limit) || 100);
-			query.skip(Number(req.query.skip) || 0);
+			if (count > skipCount) {
+				query.skip(skipCount);
+			}
 			query.sort(sort.string);
-			query.exec(next);
-		}
-	}, function(err, results) {
+			query.exec(function (err, items) {
+				next(err, count, items);
+			});
+		},
+	], function (err, count, items) {
 		if (err) {
 			res.logError('admin/server/api/list/get', 'database error finding items', err);
 			return res.apiError('database error', err);
 		}
 		return res.json({
-			results: results.items.map(function (item) {
+			results: items.map(function (item) {
 				return req.list.getData(item, req.query.select, req.query.expandRelationshipFields);
 			}),
-			count: results.count
+			count: count,
 		});
 	});
 };

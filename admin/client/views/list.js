@@ -5,20 +5,21 @@ import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import CurrentListStore from '../stores/CurrentListStore';
 import Columns from '../columns';
-import ConfirmationDialog from '../components/ConfirmationDialog';
-import CreateForm from '../components/CreateForm';
+import ConfirmationDialog from '../components/Forms/ConfirmationDialog';
+import CreateForm from '../components/Forms/CreateForm';
 import FlashMessages from '../components/FlashMessages';
 import Footer from '../components/Footer';
-import ListColumnsForm from '../components/ListColumnsForm';
-import ListControl from '../components/ListControl';
-import ListDownloadForm from '../components/ListDownloadForm';
-import ListFilters from '../components/ListFilters';
-import ListFiltersAdd from '../components/ListFiltersAdd';
-import ListSort from '../components/ListSort';
-import MobileNavigation from '../components/MobileNavigation';
-import PrimaryNavigation from '../components/PrimaryNavigation';
-import SecondaryNavigation from '../components/SecondaryNavigation';
-import UpdateForm from '../components/UpdateForm';
+import ItemsTable from '../components/ItemsTable/ItemsTable';
+import ListColumnsForm from '../components/List/ListColumnsForm';
+import ListControl from '../components/List/ListControl';
+import ListDownloadForm from '../components/List/ListDownloadForm';
+import ListFilters from '../components/List/ListFilters';
+import ListFiltersAdd from '../components/List/ListFiltersAdd';
+import ListSort from '../components/List/ListSort';
+import MobileNavigation from '../components/Navigation/MobileNavigation';
+import PrimaryNavigation from '../components/Navigation/PrimaryNavigation';
+import SecondaryNavigation from '../components/Navigation/SecondaryNavigation';
+import UpdateForm from '../components/Forms/UpdateForm';
 import { BlankState, Button, Container, FormInput, InputGroup, Pagination, Spinner } from 'elemental';
 import { plural } from '../utils';
 
@@ -28,7 +29,7 @@ const ListView = React.createClass({
 	getInitialState () {
 		return {
 			confirmationDialog: {
-				isOpen: false
+				isOpen: false,
 			},
 			checkedItems: {},
 			constrainTableWidth: true,
@@ -59,6 +60,7 @@ const ListView = React.createClass({
 			pageSize: CurrentListStore.getPageSize(),
 			ready: CurrentListStore.isReady(),
 			search: CurrentListStore.getActiveSearch(),
+			rowAlert: CurrentListStore.rowAlert(),
 		};
 		if (!this._searchTimeout) {
 			state.searchString = state.search;
@@ -74,7 +76,7 @@ const ListView = React.createClass({
 	updateSearch (e) {
 		clearTimeout(this._searchTimeout);
 		this.setState({
-			searchString: e.target.value
+			searchString: e.target.value,
 		});
 		var delay = e.target.value.length > 1 ? 150 : 0;
 		this._searchTimeout = setTimeout(() => {
@@ -112,9 +114,9 @@ const ListView = React.createClass({
 		console.log('Update ALL the things!');
 	},
 	massDelete () {
-		let { checkedItems, list } = this.state;
-		let itemCount = plural(checkedItems, ('* ' + list.singular.toLowerCase()), ('* ' + list.plural.toLowerCase()));
-		let itemIds = Object.keys(checkedItems);
+		const { checkedItems, list } = this.state;
+		const itemCount = plural(checkedItems, ('* ' + list.singular.toLowerCase()), ('* ' + list.plural.toLowerCase()));
+		const itemIds = Object.keys(checkedItems);
 
 		this.setState({
 			confirmationDialog: {
@@ -125,8 +127,8 @@ const ListView = React.createClass({
 					CurrentListStore.deleteItems(itemIds);
 					this.toggleManageMode();
 					this.removeConfirmationDialog();
-				}
-			}
+				},
+			},
 		});
 	},
 	handleManagementSelect (selection) {
@@ -143,7 +145,7 @@ const ListView = React.createClass({
 		return (
 			<InputGroup.Section grow className="ListHeader__search">
 				<FormInput ref="listSearchInput" value={this.state.searchString} onChange={this.updateSearch} onKeyUp={this.handleSearchKey} placeholder="Search" className="ListHeader__searchbar-input" />
-				<button ref="listSearchClear" type="button" onClick={this.handleSearchClear} disabled={!this.state.searchString.length} className={searchClearIcon} />
+				<button ref="listSearchClear" type="button" title="Clear search query" onClick={this.handleSearchClear} disabled={!this.state.searchString.length} className={searchClearIcon} />
 			</InputGroup.Section>
 		);
 	},
@@ -171,7 +173,6 @@ const ListView = React.createClass({
 	},
 	renderConfirmationDialog () {
 		const props = this.state.confirmationDialog;
-
 		return (
 			<ConfirmationDialog
 				isOpen={props.isOpen}
@@ -183,29 +184,28 @@ const ListView = React.createClass({
 		);
 	},
 	renderManagement () {
-
 		// WIP: Management mode currently under development, so the UI is disabled
 		// unless the KEYSTONE_DEV environment variable is set
 		if (!Keystone.devMode) return;
 
-		let { checkedItems, items, list, manageMode, pageSize } = this.state;
+		const { checkedItems, items, list, manageMode, pageSize } = this.state;
 		if (!items.count || (list.nodelete && list.noedit)) return;
 
-		let checkedItemCount = Object.keys(checkedItems).length;
-		let buttonNoteStyles = { color: '#999', fontWeight: 'normal' };
+		const checkedItemCount = Object.keys(checkedItems).length;
+		const buttonNoteStyles = { color: '#999', fontWeight: 'normal' };
 
 		// action buttons
-		let actionUpdateButton = !list.noedit ? (
+		const actionUpdateButton = !list.noedit ? (
 			<InputGroup.Section>
 				<Button onClick={this.toggleUpdateModal} disabled={!checkedItemCount}>Update</Button>
 			</InputGroup.Section>
 		) : null;
-		let actionDeleteButton = !list.nodelete ? (
+		const actionDeleteButton = !list.nodelete ? (
 			<InputGroup.Section>
 				<Button onClick={this.massDelete} disabled={!checkedItemCount}>Delete</Button>
 			</InputGroup.Section>
 		) : null;
-		let actionButtons = manageMode ? (
+		const actionButtons = manageMode ? (
 			<InputGroup.Section>
 				<InputGroup contiguous>
 					{actionUpdateButton}
@@ -215,12 +215,12 @@ const ListView = React.createClass({
 		) : null;
 
 		// select buttons
-		let selectAllButton = items.count > pageSize ? (
-		<InputGroup.Section>
-			<Button onClick={() => this.handleManagementSelect('all')} title="Select all rows (including those not visible)">All <small style={buttonNoteStyles}>({items.count})</small></Button>
-		</InputGroup.Section>
+		const selectAllButton = items.count > pageSize ? (
+			<InputGroup.Section>
+				<Button onClick={() => this.handleManagementSelect('all')} title="Select all rows (including those not visible)">All <small style={buttonNoteStyles}>({items.count})</small></Button>
+			</InputGroup.Section>
 		) : null;
-		let selectButtons = manageMode ? (
+		const selectButtons = manageMode ? (
 			<InputGroup.Section>
 				<InputGroup contiguous>
 					{selectAllButton}
@@ -235,7 +235,7 @@ const ListView = React.createClass({
 		) : null;
 
 		// selected count text
-		let selectedCountText = manageMode ? (
+		const selectedCountText = manageMode ? (
 			<InputGroup.Section grow>
 				<span style={{ color: '#666', display: 'inline-block', lineHeight: '2.4em', margin: 1 }}>{checkedItemCount} selected</span>
 			</InputGroup.Section>
@@ -254,7 +254,7 @@ const ListView = React.createClass({
 		);
 	},
 	renderPagination () {
-		let { currentPage, items, list, manageMode, pageSize } = this.state;
+		const { currentPage, items, list, manageMode, pageSize } = this.state;
 		if (manageMode || !items.count) return;
 
 		return (
@@ -272,7 +272,7 @@ const ListView = React.createClass({
 		);
 	},
 	renderHeader () {
-		let { items, list } = this.state;
+		const { items, list } = this.state;
 		return (
 			<div className="ListHeader">
 				<Container>
@@ -309,8 +309,8 @@ const ListView = React.createClass({
 
 	checkTableItem (item, e) {
 		e.preventDefault();
-		let newCheckedItems = this.state.checkedItems;
-		let itemId = item.id;
+		const newCheckedItems = { ...this.state.checkedItems };
+		const itemId = item.id;
 		if (this.state.checkedItems[itemId]) {
 			delete newCheckedItems[itemId];
 		} else {
@@ -321,7 +321,7 @@ const ListView = React.createClass({
 		});
 	},
 	checkAllTableItems () {
-		let checkedItems = {};
+		const checkedItems = {};
 		this.state.items.results.forEach(item => {
 			checkedItems[item.id] = true;
 		});
@@ -349,15 +349,15 @@ const ListView = React.createClass({
 				onConfirmation: () => {
 					CurrentListStore.deleteItem(item.id);
 					this.removeConfirmationDialog();
-				}
-			}
+				},
+			},
 		});
 	},
 	removeConfirmationDialog () {
 		this.setState({
 			confirmationDialog: {
-				isOpen: false
-			}
+				isOpen: false,
+			},
 		});
 	},
 	toggleTableWidth () {
@@ -365,71 +365,6 @@ const ListView = React.createClass({
 			constrainTableWidth: !this.state.constrainTableWidth,
 		});
 	},
-	renderTableCols () {
-		var cols = this.state.columns.map((col) => <col width={col.width} key={col.path} />);
-		// add delete col when applicable
-		if (!this.state.list.nodelete) {
-			cols.unshift(<col width={TABLE_CONTROL_COLUMN_WIDTH} key="delete" />);
-		}
-		// add sort col when applicable
-		if (this.state.list.sortable) {
-			cols.unshift(<col width={TABLE_CONTROL_COLUMN_WIDTH} key="sortable" />);
-		}
-		return <colgroup>{cols}</colgroup>;
-	},
-	renderTableHeaders () {
-		var cells = this.state.columns.map((col, i) => {
-			// span first col for controls when present
-			var span = 1;
-			if (!i) {
-				if (this.state.list.sortable) span++;
-				if (!this.state.list.nodelete) span++;
-			}
-			return <th key={col.path} colSpan={span}>{col.label}</th>;
-		});
-		return <thead><tr>{cells}</tr></thead>;
-	},
-	renderTableRow (item) {
-		let itemId = item.id;
-		let rowClassname = classnames({
-			'ItemList__row--selected': this.state.checkedItems[itemId],
-			'ItemList__row--manage': this.state.manageMode,
-		});
-		var cells = this.state.columns.map((col, i) => {
-			var ColumnType = Columns[col.type] || Columns.__unrecognised__;
-			var linkTo = !i ? `${Keystone.adminPath}/${this.state.list.path}/${itemId}` : undefined;
-			return <ColumnType key={col.path} list={this.state.list} col={col} data={item} linkTo={linkTo} />;
-		});
-		// add sortable icon when applicable
-		if (this.state.list.sortable) {
-			cells.unshift(<ListControl key="_sort" onClick={this.reorderItems} type="sortable" />);
-		}
-		// add delete/check icon when applicable
-		if (!this.state.list.nodelete) {
-			cells.unshift(this.state.manageMode ? (
-				<ListControl key="_check" type="check" active={this.state.checkedItems[itemId]} />
-			) : (
-				<ListControl key="_delete" onClick={(e) => this.deleteTableItem(item, e)} type="delete" />
-			));
-		}
-		return <tr key={'i' + item.id} onClick={this.state.manageMode ? (e) => this.checkTableItem(item, e) : null} className={rowClassname}>{cells}</tr>;
-	},
-	renderTable () {
-		if (!this.state.items.results.length) return null;
-
-		return (
-			<div className="ItemList-wrapper">
-				<table cellPadding="0" cellSpacing="0" className="Table ItemList">
-					{this.renderTableCols()}
-					{this.renderTableHeaders()}
-					<tbody>
-						{this.state.items.results.map(this.renderTableRow)}
-					</tbody>
-				</table>
-			</div>
-		);
-	},
-
 
 	// ==============================
 	// COMMON
@@ -470,20 +405,31 @@ const ListView = React.createClass({
 	renderActiveState () {
 		if (this.state.showBlankState) return null;
 
-		let containerStyle = {
+		const containerStyle = {
 			transition: 'max-width 160ms ease-out',
 			msTransition: 'max-width 160ms ease-out',
 			MozTransition: 'max-width 160ms ease-out',
 			WebkitTransition: 'max-width 160ms ease-out',
 		};
-		if (!this.state.constrainTableWidth) containerStyle['maxWidth'] = '100%';
+		if (!this.state.constrainTableWidth) {
+			containerStyle.maxWidth = '100%';
+		}
 
 		return (
 			<div>
 				{this.renderHeader()}
 				<Container style={containerStyle}>
 					<FlashMessages messages={this.props.messages} />
-					{this.renderTable()}
+					<ItemsTable
+						deleteTableItem={this.deleteTableItem}
+						list={this.state.list}
+						columns={this.state.columns}
+						items={this.state.items}
+						manageMode={this.state.manageMode}
+						checkedItems={this.state.checkedItems}
+						rowAlert={this.state.rowAlert}
+						checkTableItem={this.checkTableItem}
+					/>
 					{this.renderNoSearchResults()}
 				</Container>
 			</div>
@@ -550,8 +496,7 @@ const ListView = React.createClass({
 				{this.renderConfirmationDialog()}
 			</div>
 		);
-	}
-
+	},
 });
 
 ReactDOM.render(

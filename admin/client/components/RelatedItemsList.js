@@ -16,13 +16,13 @@ const RelatedItemsList = React.createClass({
 			items: null,
 		};
 	},
+	componentDidMount () {
+		this.loadItems();
+	},
 	getColumns () {
 		const { relationship, refList } = this.props;
 		const columns = refList.expandColumns(refList.defaultColumns);
 		return columns.filter(i => i.path !== relationship.refPath);
-	},
-	componentDidMount () {
-		this.loadItems();
 	},
 	loadItems () {
 		const { refList, relatedItemId, relationship } = this.props;
@@ -57,7 +57,7 @@ const RelatedItemsList = React.createClass({
 				</table>
 			</div>
 		) : (
-			<h4>No related {this.props.refList.plural}</h4>
+			<h4 className="Relationship__noresults">No related {this.props.refList.plural}</h4>
 		);
 	},
 	renderTableCols () {
@@ -85,11 +85,11 @@ const RelatedItemsList = React.createClass({
 		const listHref = `${Keystone.adminPath}/${this.props.refList.path}`;
 		return (
 			<div className="Relationship">
-				<h3><a href={listHref}>{this.props.refList.label}</a></h3>
+				<h3 className="Relationship__link"><a href={listHref}>{this.props.refList.label}</a></h3>
 				{this.state.items ? this.renderItems() : <Spinner size="sm" />}
 			</div>
 		);
-	}
+	},
 });
 
 module.exports = RelatedItemsList;

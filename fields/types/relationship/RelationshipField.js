@@ -1,13 +1,16 @@
 import async from 'async';
+import Lists from '../../../admin/client/stores/Lists';
 import Field from '../Field';
 import React from 'react';
 import Select from 'react-select';
 import xhr from 'xhr';
-import { Button, FormInput } from 'elemental';
+import { Button, FormInput, InputGroup } from 'elemental';
 
-function compareValues(current, next) {
-	if (current.length !== next.length) return false;
-	for (let i = 0; i < current.length; i++) {
+function compareValues (current, next) {
+	const currentLength = current ? current.length : 0;
+	const nextLength = next ? next.length : 0;
+	if (currentLength !== nextLength) return false;
+	for (let i = 0; i < currentLength; i++) {
 		if (current[i] !== next[i]) return false;
 	}
 	return true;
@@ -20,6 +23,7 @@ module.exports = Field.create({
 	getInitialState () {
 		return {
 			value: null,
+			createIsOpen: false,
 		};
 	},
 
@@ -44,8 +48,8 @@ module.exports = Field.create({
 	buildFilters () {
 		var filters = {};
 
-		_.each(this.props.filters, function(value, key) {
-			if(_.isString(value) && value[0] == ':') {//eslint-disable-line eqeqeq
+		_.forEach(this.props.filters, (value, key) => {
+			if (_.isString(value) && value[0] == ':') { // eslint-disable-line eqeqeq
 				var fieldName = value.slice(1);
 
 				var val = this.props.values[fieldName];
@@ -66,8 +70,8 @@ module.exports = Field.create({
 
 		var parts = [];
 
-		_.each(filters, function (val, key) {
-			parts.push('filters[' + key + ']=' + encodeURIComponent(val));
+		_.forEach(filters, function (val, key) {
+			parts.push('filters[' + key + '][value]=' + encodeURIComponent(val));
 		});
 
 		return parts.join('&');
@@ -86,7 +90,7 @@ module.exports = Field.create({
 			});
 		};
 		values = Array.isArray(values) ? values : values.split(',');
-		let cachedValues = values.map(i => this._itemsCache[i]).filter(i => i);
+		const cachedValues = values.map(i => this._itemsCache[i]).filter(i => i);
 		if (cachedValues.length === values.length) {
 			this.setState({
 				loading: false,
@@ -116,10 +120,14 @@ module.exports = Field.create({
 		});
 	},
 
+	// NOTE: this seems like the wrong way to add options to the Select
+	loadOptionsCallback: {},
 	loadOptions (input, callback) {
-		// TODO: Implement filters
+		// NOTE: this seems like the wrong way to add options to the Select
+		this.loadOptionsCallback = callback;
+		const filters = this.buildFilters();
 		xhr({
-			url: Keystone.adminPath + '/api/' + this.props.refList.path + '?basic&search=' + input,
+			url: Keystone.adminPath + '/api/' + this.props.refList.path + '?basic&search=' + input + '&' + filters,
 			responseType: 'json',
 		}, (err, resp, data) => {
 			if (err) {
@@ -141,6 +149,31 @@ module.exports = Field.create({
 		});
 	},
 
+	toggleCreate (visible) {
+		this.setState({
+			createIsOpen: visible,
+		});
+	},
+
+	onCreate (item) {
+		this.cacheItem(item);
+		if (Array.isArray(this.state.value)) {
+			// For many relationships, append the new item to the end
+			const values = this.state.value.map((item) => item.id);
+			values.push(item.id);
+			this.valueChanged(values.join(','));
+		} else {
+			this.valueChanged(item.id);
+		}
+
+		// NOTE: this seems like the wrong way to add options to the Select
+		this.loadOptionsCallback(null, {
+			complete: true,
+			options: Object.keys(this._itemsCache).map((k) => this._itemsCache[k]),
+		});
+		this.toggleCreate(false);
+	},
+
 	renderSelect (noedit) {
 		return (
 			<Select.Async
@@ -157,12 +190,39 @@ module.exports = Field.create({
 		);
 	},
 
+	renderInputGroup () {
+		// TODO: find better solution
+		//   when importing the CreateForm using: import CreateForm from '../../../admin/client/components/CreateForm';
+		//   CreateForm was imported as a blank object. This stack overflow post suggested lazilly requiring it:
+		// http://stackoverflow.com/questions/29807664/cyclic-dependency-returns-empty-object-in-react-native
+		const CreateForm = require('../../../admin/client/components/Forms/CreateForm');
+		return (
+			<InputGroup>
+				<InputGroup.Section grow>
+					{this.renderSelect()}
+				</InputGroup.Section>
+				<InputGroup.Section>
+					<Button onClick={() => this.toggleCreate(true)} type="success">+</Button>
+				</InputGroup.Section>
+				<CreateForm
+					list={Lists[this.props.refList.key]}
+					isOpen={this.state.createIsOpen}
+					onCreate={(data) => this.onCreate(data)}
+					onCancel={() => this.toggleCreate(false)} />
+			</InputGroup>
+		);
+	},
+
 	renderValue () {
 		return this.renderSelect(true);
 	},
 
 	renderField () {
-		return this.renderSelect();
-	}
+		if (this.props.createInline) {
+			return this.renderInputGroup();
+		} else {
+			return this.renderSelect();
+		}
+	},
 
 });

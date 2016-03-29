@@ -3,11 +3,11 @@ import blacklist from 'blacklist';
 
 var FooterBar = React.createClass({
 	propTypes: {
-		style: React.PropTypes.object
+		style: React.PropTypes.object,
 	},
 	getDefaultProps () {
 		return {
-			style: {}
+			style: {},
 		};
 	},
 	getInitialState () {
@@ -15,7 +15,7 @@ var FooterBar = React.createClass({
 			position: 'relative',
 			width: 'auto',
 			height: 'auto',
-			top: 0
+			top: 0,
 		};
 	},
 	componentDidMount () {
@@ -27,7 +27,7 @@ var FooterBar = React.createClass({
 		var footerStyle = window.getComputedStyle(footer);
 		this.footerSize = {
 			x: footer.offsetWidth,
-			y: footer.offsetHeight + parseInt(footerStyle.marginTop || '0')
+			y: footer.offsetHeight + parseInt(footerStyle.marginTop || '0'),
 		};
 		window.addEventListener('scroll', this.recalcPosition, false);
 		window.addEventListener('resize', this.recalcPosition, false);
@@ -36,7 +36,7 @@ var FooterBar = React.createClass({
 	getWindowSize () {
 		return {
 			x: window.innerWidth,
-			y: window.innerHeight
+			y: window.innerHeight,
 		};
 	},
 	recalcPosition () {
@@ -61,7 +61,7 @@ var FooterBar = React.createClass({
 
 		var newState = {
 			width: this.footerSize.x,
-			height: this.footerSize.y
+			height: this.footerSize.y,
 		};
 
 		if (viewY > maxY && (sizeChanged || this.mode !== 'inline')) {
@@ -80,21 +80,21 @@ var FooterBar = React.createClass({
 		var wrapperStyle = {
 			height: this.state.height,
 			marginTop: 60,
-			position: 'relative'
+			position: 'relative',
 		};
 		var footerProps = blacklist(this.props, 'children', 'style');
 		var footerStyle = Object.assign({}, this.props.style, {
 			position: this.state.position,
 			top: this.state.top,
 			width: this.state.width,
-			height: this.state.height
+			height: this.state.height,
 		});
 		return (
 			<div ref="wrapper" style={wrapperStyle}>
 				<div ref="footer" style={footerStyle} {...footerProps}>{this.props.children}</div>
 			</div>
 		);
-	}
+	},
 });
 
 module.exports = FooterBar;

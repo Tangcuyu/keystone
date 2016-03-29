@@ -6,6 +6,7 @@ var FormField = require('elemental').FormField;
 var FormInput = require('elemental').FormInput;
 
 var lastId = 0;
+var ENTER_KEYCODE = 13;
 
 function newItem (value) {
 	lastId = lastId + 1;
@@ -17,25 +18,25 @@ function reduceValues (values) {
 }
 
 module.exports = {
-	getInitialState: function() {
+	getInitialState: function () {
 		return {
-			values: this.props.value.map(newItem)
+			values: this.props.value.map(newItem),
 		};
 	},
 
-	componentWillReceiveProps: function(nextProps) {
+	componentWillReceiveProps: function (nextProps) {
 		if (nextProps.value.join('|') !== reduceValues(this.state.values).join('|')) {
 			this.setState({
-				values: nextProps.value.map(newItem)
+				values: nextProps.value.map(newItem),
 			});
 		}
 	},
 
-	addItem: function() {
+	addItem: function () {
 		var self = this;
 		var newValues = this.state.values.concat(newItem(''));
 		this.setState({
-			values: newValues
+			values: newValues,
 		}, () => {
 			if (!this.state.values.length) return;
 			ReactDOM.findDOMNode(this.refs['item_' + this.state.values.length]).focus();
@@ -43,30 +44,30 @@ module.exports = {
 		this.valueChanged(reduceValues(newValues));
 	},
 
-	removeItem: function(i) {
+	removeItem: function (i) {
 		var newValues = _.without(this.state.values, i);
 		this.setState({
-			values: newValues
-		}, function() {
+			values: newValues,
+		}, function () {
 			ReactDOM.findDOMNode(this.refs.button).focus();
 		});
 		this.valueChanged(reduceValues(newValues));
 	},
 
-	updateItem: function(i, event) {
+	updateItem: function (i, event) {
 		var updatedValues = this.state.values;
 		var updateIndex = updatedValues.indexOf(i);
 		updatedValues[updateIndex].value = this.cleanInput ? this.cleanInput(event.target.value) : event.target.value;
 		this.setState({
-			values: updatedValues
+			values: updatedValues,
 		});
 		this.valueChanged(reduceValues(updatedValues));
 	},
 
-	valueChanged: function(values) {
+	valueChanged: function (values) {
 		this.props.onChange({
 			path: this.props.path,
-			value: values
+			value: values,
 		});
 	},
 
@@ -79,12 +80,12 @@ module.exports = {
 		);
 	},
 
-	renderItem: function(item, index) {
+	renderItem: function (item, index) {
 		const Input = this.getInputComponent ? this.getInputComponent() : FormInput;
 		const value = this.processInputValue ? this.processInputValue(item.value) : item.value;
 		return (
 			<FormField key={item.key}>
-				<Input ref={'item_' + (index + 1)} name={this.props.path} value={value} onChange={this.updateItem.bind(this, item)} autoComplete="off" />
+				<Input ref={'item_' + (index + 1)} name={this.props.path} value={value} onChange={this.updateItem.bind(this, item)} onKeyDown={this.addItemOnEnter} autoComplete="off" />
 				<Button type="link-cancel" onClick={this.removeItem.bind(this, item)} className="keystone-relational-button">
 					<span className="octicon octicon-x" />
 				</Button>
@@ -111,5 +112,12 @@ module.exports = {
 	// Override shouldCollapse to check for array length
 	shouldCollapse: function () {
 		return this.props.collapse && !this.props.value.length;
-	}
+	},
+
+	addItemOnEnter: function (event) {
+		if (event.keyCode === ENTER_KEYCODE) {
+			this.addItem();
+			event.preventDefault();
+		}
+	},
 };

@@ -65,6 +65,10 @@
 	margin-bottom: 30px;
 }
 
+.Relationship__noresults {
+	color: #999;
+}
+
 
 // col value - crop field content so we maintain one line throught the list table
 
@@ -125,6 +129,22 @@
 }
 
 
+// Drag and Drop
+// ------------------------------
+
+.ItemList__row--dragging {
+	background-color: white;
+	cursor: move;
+	opacity: 1;
+}
+.ItemList__row--success,
+.ItemList__row--failure {
+	animation: listitem-finished-dragging 1.8s;
+}
+
+@-webkit-keyframes listitem-finished-dragging {
+	from { background-color: #fff6c0; }
+}
 
 
 // Links
@@ -184,7 +204,8 @@
 .ItemList__value--key,
 .ItemList__value--html,
 .ItemList__value--htmlWYSIWYG,
-.ItemList__value--id {
+.ItemList__value--id,
+.ItemList__value--monospace {
 	font-family: @font-family-monospace;
 }
 

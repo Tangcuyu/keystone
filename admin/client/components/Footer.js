@@ -7,12 +7,12 @@ var Footer = React.createClass({
 		appversion: React.PropTypes.string,
 		backUrl: React.PropTypes.string,
 		brand: React.PropTypes.string,
-		User: React.PropTypes.object,
 		user: React.PropTypes.object,
+		User: React.PropTypes.object, // eslint-disable-line react/sort-prop-types
 		version: React.PropTypes.string,
 	},
 	renderUser () {
-		let { User, user } = this.props;
+		const { User, user } = this.props;
 		if (!User || !user) return null;
 
 		return (
@@ -26,7 +26,7 @@ var Footer = React.createClass({
 		);
 	},
 	render () {
-		let { backUrl, brand, appversion, version } = this.props;
+		const { backUrl, brand, appversion, version } = this.props;
 
 		return (
 			<footer className="keystone-footer">
@@ -39,7 +39,7 @@ var Footer = React.createClass({
 				</Container>
 			</footer>
 		);
-	}
+	},
 });
 
 module.exports = Footer;

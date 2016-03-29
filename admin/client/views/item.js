@@ -2,32 +2,28 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Columns from '../columns';
 import Lists from '../stores/Lists';
-import CreateForm from '../components/CreateForm';
-import EditForm from '../components/EditForm';
-import EditFormHeader from '../components/EditFormHeader';
+import CreateForm from '../components/Forms/CreateForm';
+import EditForm from '../components/Forms/EditForm';
+import EditFormHeader from '../components/Forms/EditFormHeader';
 import FlashMessages from '../components/FlashMessages';
 import Footer from '../components/Footer';
-import MobileNavigation from '../components/MobileNavigation';
-import PrimaryNavigation from '../components/PrimaryNavigation';
+import MobileNavigation from '../components/Navigation/MobileNavigation';
+import PrimaryNavigation from '../components/Navigation/PrimaryNavigation';
 import RelatedItemsList from '../components/RelatedItemsList';
-import SecondaryNavigation from '../components/SecondaryNavigation';
+import SecondaryNavigation from '../components/Navigation/SecondaryNavigation';
 import { Alert, Container, Spinner } from 'elemental';
 
 var ItemView = React.createClass({
-
 	displayName: 'ItemView',
-
 	getInitialState () {
 		return {
 			createIsOpen: false,
 			itemData: null,
 		};
 	},
-
 	componentDidMount () {
 		this.loadItemData();
 	},
-
 	loadItemData () {
 		this.props.list.loadItem(this.props.itemId, { drilldown: true }, (err, itemData) => {
 			if (err || !itemData) {
@@ -39,29 +35,26 @@ var ItemView = React.createClass({
 			this.setState({ itemData });
 		});
 	},
-
 	toggleCreate (visible) {
 		this.setState({
 			createIsOpen: visible,
 		});
 	},
-
 	renderRelationships () {
-		let { relationships } = this.props.list;
-		let keys = Object.keys(relationships);
+		const { relationships } = this.props.list;
+		const keys = Object.keys(relationships);
 		if (!keys.length) return;
 		return (
 			<div>
 				<h2>Relationships</h2>
 				{keys.map(key => {
-					let relationship = relationships[key];
-					let refList = Lists[relationship.ref];
+					const relationship = relationships[key];
+					const refList = Lists[relationship.ref];
 					return <RelatedItemsList key={relationship.path} list={this.props.list} refList={refList} relatedItemId={this.props.itemId} relationship={relationship} />;
 				})}
 			</div>
 		);
 	},
-
 	render () {
 		if (!this.state.itemData) return <div className="view-loading-indicator"><Spinner size="md" /></div>;
 		return (
@@ -111,8 +104,7 @@ var ItemView = React.createClass({
 					version={this.props.version} />
 			</div>
 		);
-	}
-
+	},
 });
 
 ReactDOM.render(

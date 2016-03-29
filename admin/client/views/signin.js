@@ -17,19 +17,19 @@ var SigninView = React.createClass({
 			isAnimating: false,
 			isInvalid: false,
 			invalidMessage: '',
-			signedOut: window.location.search === '?signedout'
+			signedOut: window.location.search === '?signedout',
 		};
 	},
 	componentDidMount () {
-		if (this.state.signedOut && window.history.replaceState) {
-			history.replaceState({}, window.location.pathname);
+		if (this.state.signedOut && window.history.replace) {
+			history.replace({}, window.location.pathname);
 		}
 		if (this.refs.email) {
 			ReactDOM.findDOMNode(this.refs.email).select();
 		}
 	},
 	handleInputChange (e) {
-		let newState = {};
+		const newState = {};
 		newState[e.target.name] = e.target.value;
 		this.setState(newState);
 	},
@@ -40,13 +40,12 @@ var SigninView = React.createClass({
 		}
 		SessionStore.signin({
 			email: this.state.email,
-			password: this.state.password
+			password: this.state.password,
 		}, (err, data) => {
 			if (err || data && data.error) {
 				this.displayError('The email and password you entered are not valid.');
 			} else {
-				// TODO: Handle custom signin redirections
-				top.location.href = Keystone.adminPath;
+				top.location.href = this.props.from ? this.props.from : Keystone.adminPath;
 			}
 		});
 	},
@@ -54,7 +53,7 @@ var SigninView = React.createClass({
 		this.setState({
 			isAnimating: true,
 			isInvalid: true,
-			invalidMessage: message
+			invalidMessage: message,
 		});
 		setTimeout(this.finishAnimation, 750);
 	},
@@ -64,7 +63,7 @@ var SigninView = React.createClass({
 			ReactDOM.findDOMNode(this.refs.email).select();
 		}
 		this.setState({
-			isAnimating: false
+			isAnimating: false,
 		});
 	},
 	renderBrand () {
@@ -88,7 +87,7 @@ var SigninView = React.createClass({
 	},
 	renderUserInfo () {
 		if (!this.props.user) return null;
-		let openKeystoneButton = this.props.userCanAccessKeystone ? <Button href={Keystone.adminPath} type="primary">Open Keystone</Button> : null;
+		const openKeystoneButton = this.props.userCanAccessKeystone ? <Button href={Keystone.adminPath} type="primary">Open Keystone</Button> : null;
 		return (
 			<div className="auth-box__col">
 				<p>Hi {this.props.user.name.first},</p>
@@ -123,14 +122,14 @@ var SigninView = React.createClass({
 						<FormInput type="password" name="password" onChange={this.handleInputChange} value={this.state.password} ref="password" />
 					</FormField>
 					<Button disabled={this.state.animating} type="primary" submit>Sign In</Button>
-					{/*<Button disabled={this.state.animating} type="link-text">Forgot Password?</Button>*/}
+					{/* <Button disabled={this.state.animating} type="link-text">Forgot Password?</Button> */}
 				</Form>
 			</div>
 		);
 	},
 	render () {
-		let boxClassname = classnames('auth-box', {
-			'auth-box--has-errors': this.state.isAnimating
+		const boxClassname = classnames('auth-box', {
+			'auth-box--has-errors': this.state.isAnimating,
 		});
 		return (
 			<div className="auth-wrapper">
@@ -149,12 +148,16 @@ var SigninView = React.createClass({
 				</div>
 			</div>
 		);
-	}
+	},
 });
 
-ReactDOM.render(<SigninView
+ReactDOM.render(
+	<SigninView
 		brand={Keystone.brand}
+		from={Keystone.from}
 		logo={Keystone.logo}
 		user={Keystone.user}
 		userCanAccessKeystone={Keystone.userCanAccessKeystone}
-	/>, document.getElementById('signin-view'));
+	/>,
+	document.getElementById('signin-view')
+);
