@@ -36,38 +36,33 @@ var ListTile = React.createClass({
 });
 
 var HomeView = React.createClass({
-
 	displayName: 'HomeView',
-
 	getInitialState () {
 		return {
-			counts: {}
+			counts: {},
 		};
 	},
-
 	componentDidMount () {
 		this.loadCounts();
 	},
-
 	loadCounts () {
 		xhr({
-			url: `${Keystone.adminPath}/api/counts`
+			url: `${Keystone.adminPath}/api/counts`,
 		}, (err, resp, body) => {
 			try {
 				body = JSON.parse(body);
-			} catch(e) {
+			} catch (e) {
 				console.log('Error parsing results json:', e, body);
 				return;
 			}
 			if (body && body.counts) {
 				if (!this.isMounted()) return;
 				this.setState({
-					counts: body.counts
+					counts: body.counts,
 				});
 			}
 		});
 	},
-
 	getHeadingIconClasses (navSectionKey) {
 		const icons = [
 			{ icon: 'book', sections: ['books', 'posts', 'blog', 'blog-posts', 'stories', 'news-stories', 'content'] },
@@ -81,9 +76,8 @@ var HomeView = React.createClass({
 			{ icon: 'megaphone', sections: ['broadcasts', 'jobs', 'talks'] },
 			{ icon: 'organization', sections: ['contacts', 'customers', 'groups', 'members', 'people', 'speakers', 'teams', 'users'] },
 			{ icon: 'package', sections: ['boxes', 'items', 'packages', 'parcels'] },
-			{ icon: 'tag', sections: ['tags'] }
+			{ icon: 'tag', sections: ['tags'] },
 		];
-
 		const classes = icons
 			.filter(obj => obj.sections.indexOf(navSectionKey) !== -1)
 			.map(obj => `octicon-${obj.icon}`);
@@ -94,16 +88,13 @@ var HomeView = React.createClass({
 
 		return ['dashboard-group__heading-icon', 'octicon', ...classes].join(' ');
 	},
-
 	renderFlatNav () {
 		let lists = this.props.navLists.map((list) => {
 			var href = list.external ? list.path : `${Keystone.adminPath}/${list.path}`;
 			return <ListTile key={list.path} label={list.label} href={href} count={plural(this.state.counts[list.key], '* Item', '* Items')} />;
 		});
-
 		return <div className="dashboard-group__lists">{lists}</div>;
 	},
-
 	renderGroupedNav () {
 		return (
 			<div>
@@ -127,7 +118,6 @@ var HomeView = React.createClass({
 			</div>
 		);
 	},
-
 	renderOrphanedLists () {
 		if (!this.props.orphanedLists.length) return;
 		return (
@@ -145,7 +135,6 @@ var HomeView = React.createClass({
 			</div>
 		);
 	},
-
 	render () {
 		return (
 			<div className="keystone-wrapper">
@@ -182,8 +171,7 @@ var HomeView = React.createClass({
 					version={this.props.version} />
 			</div>
 		);
-	}
-
+	},
 });
 
 ReactDOM.render(

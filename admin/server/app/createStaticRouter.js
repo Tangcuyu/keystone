@@ -25,7 +25,7 @@ module.exports = function createStaticRouter (keystone) {
 
 	// prebuild static resources on the next tick
 	// improves first-request performance
-	process.nextTick(function() {
+	process.nextTick(function () {
 		bundles.fields.build();
 		bundles.signin.build();
 		bundles.home.build();
@@ -43,19 +43,19 @@ module.exports = function createStaticRouter (keystone) {
 				elementalPath: JSON.stringify(elementalPath),
 				reactSelectPath: JSON.stringify(reactSelectPath),
 				adminPath: JSON.stringify(keystone.get('admin path')),
-			}
-		}
+			},
+		},
 	};
 
 	/* Configure router */
-	router.use('/styles', less(path.resolve(__dirname + '../../../public/styles'), lessOptions));
-	router.use('/styles/fonts', express.static(path.resolve(__dirname + '../../../public/js/lib/tinymce/skins/keystone/fonts')));
+	router.use('/styles', less(path.resolve(__dirname + '/../../public/styles'), lessOptions));
+	router.use('/styles/fonts', express.static(path.resolve(__dirname + '/../../public/js/lib/tinymce/skins/keystone/fonts')));
 	router.get('/js/fields.js', bundles.fields.serve);
 	router.get('/js/signin.js', bundles.signin.serve);
 	router.get('/js/home.js', bundles.home.serve);
 	router.get('/js/item.js', bundles.item.serve);
 	router.get('/js/list.js', bundles.list.serve);
-	router.use(express.static(path.resolve(__dirname + '../../../public')));
+	router.use(express.static(path.resolve(__dirname + '/../../public')));
 
 	return router;
 };

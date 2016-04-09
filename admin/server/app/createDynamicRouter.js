@@ -2,7 +2,7 @@ var bodyParser = require('body-parser');
 var express = require('express');
 var multer = require('multer');
 
-module.exports = function createDynamicRouter(keystone) {
+module.exports = function createDynamicRouter (keystone) {
 
 	// ensure keystone nav has been initialised
 	// TODO: move this elsewhere (on demand generation, or client-side?)
@@ -40,7 +40,7 @@ module.exports = function createDynamicRouter(keystone) {
 		router.all('/signin', require('../routes/signin'));
 		router.all('/signout', require('../routes/signout'));
 		router.use(keystone.session.keystoneAuth);
-	} else if ('function' === typeof keystone.get('auth')) {
+	} else if (typeof keystone.get('auth') === 'function') {
 		router.use(keystone.get('auth'));
 	}
 
@@ -66,15 +66,18 @@ module.exports = function createDynamicRouter(keystone) {
 
 	// Init req with list
 	var initList = require('../middleware/initList')(keystone);
-
+	// lists
 	router.all('/api/counts', require('../api/counts'));
 	router.get('/api/:list', initList(), require('../api/list/get'));
 	router.get('/api/:list/:format(export.csv|export.json)', initList(), require('../api/list/download'));
+	router.post('/api/:list/create', initList(), require('../api/list/create'));
+	router.post('/api/:list/update', initList(), require('../api/list/update'));
 	router.post('/api/:list/delete', initList(), require('../api/list/delete'));
+	// items
 	router.get('/api/:list/:id', initList(), require('../api/item/get'));
 	router.post('/api/:list/:id', initList(), require('../api/item/update'));
 	router.post('/api/:list/:id/delete', initList(), require('../api/list/delete'));
-
+	router.post('/api/:list/:id/sortOrder/:sortOrder/:newOrder', initList(), require('../api/item/sortOrder'));
 	// #6: List Routes
 	router.all('/:list/:page([0-9]{1,5})?', initList(true), require('../routes/list'));
 	router.all('/:list/:item', initList(true), require('../routes/item'));

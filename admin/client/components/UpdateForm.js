@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Select from 'react-select';
 import Fields from '../fields';
+import InvalidFieldType from './InvalidFieldType';
 import { plural } from '../utils';
 import { BlankState, Button, Form, Modal } from 'elemental';
 
@@ -23,17 +24,16 @@ var UpdateForm = React.createClass({
 			fields: [],
 		};
 	},
-	componentDidUpdate () {
-		if (this.refs.focusTarget) {
-			this.refs.focusTarget.focus();
-		}
-	},
 	componentDidMount () {
 		if (this.refs.focusTarget) {
 			this.refs.focusTarget.focus();
 		}
 	},
-
+	componentDidUpdate () {
+		if (this.refs.focusTarget) {
+			this.refs.focusTarget.focus();
+		}
+	},
 	getOptions () {
 		let { fields } = this.props.list;
 		return Object.keys(fields).map(key => ({ value: fields[key].path, label: fields[key].label }));
@@ -73,7 +73,7 @@ var UpdateForm = React.createClass({
 		fields.forEach((fieldOption) => {
 			let field = list.fields[fieldOption.value];
 
-			if ('function' !== typeof Fields[field.type]) {
+			if (typeof Fields[field.type] !== 'function') {
 				formFields.push(React.createElement(InvalidFieldType, { type: field.type, path: field.path, key: field.path }));
 				return;
 			}
@@ -91,7 +91,7 @@ var UpdateForm = React.createClass({
 		);
 
 		return (
-			<div style={{ borderTop: '1px dashed rgba(0,0,0,0.1)', marginTop: 20, paddingTop: 20,  }}>
+			<div style={{ borderTop: '1px dashed rgba(0,0,0,0.1)', marginTop: 20, paddingTop: 20 }}>
 				{fieldsUI}
 			</div>
 		);
@@ -123,7 +123,7 @@ var UpdateForm = React.createClass({
 				{this.renderForm()}
 			</Modal>
 		);
-	}
+	},
 });
 
 module.exports = UpdateForm;

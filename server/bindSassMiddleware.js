@@ -5,7 +5,7 @@ module.exports = function bindSassMiddleware (keystone, app) {
 	var sassPaths = keystone.get('sass');
 	var sassOptions = keystone.get('sass options') || {};
 	var debug = require('debug')('keystone:core:bindSassMiddleware');
-	var _ = require('underscore');
+	var _ = require('lodash');
 
 	if (typeof sassPaths === 'string') {
 		sassPaths = [sassPaths];
@@ -16,23 +16,24 @@ module.exports = function bindSassMiddleware (keystone, app) {
 		try {
 			debug('adding sass');
 			sassMiddleware = require('node-sass-middleware');
-		} catch(e) {
+		} catch (e) {
 			if (e.code === 'MODULE_NOT_FOUND') {
 				console.error(
-					'\nERROR: node-sass not found.\n' +
-					'\nPlease install the node-sass-middleware from npm to use the `sass` option.' +
-					'\nYou can do this by running "npm install node-sass-middleware --save".\n'
+					'\nERROR: node-sass not found.\n'
+					+ '\nPlease install the node-sass-middleware from npm to use the `sass` option.'
+					+ '\nYou can do this by running "npm install node-sass-middleware --save".\n'
 				);
 				process.exit(1);
 			} else {
 				throw e;
 			}
 		}
-		sassPaths.forEach(function(path) {
+		var outputStyle = keystone.get('env') === 'production' ? 'compressed' : 'nested';
+		sassPaths.forEach(function (path) {
 			app.use(sassMiddleware(_.extend({
 				src: keystone.expandPath(path),
 				dest: keystone.expandPath(path),
-				outputStyle: keystone.get('env') === 'production' ? 'compressed' : 'nested'
+				outputStyle: outputStyle,
 			}, sassOptions)));
 		});
 	}

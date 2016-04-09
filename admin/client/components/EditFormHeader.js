@@ -4,31 +4,25 @@ import Toolbar from './Toolbar';
 import { Button, FormIconField, FormInput, ResponsiveText } from 'elemental';
 
 var Header = React.createClass({
-
 	displayName: 'EditFormHeader',
-
 	propTypes: {
 		data: React.PropTypes.object,
 		list: React.PropTypes.object,
 		toggleCreate: React.PropTypes.func,
 	},
-
 	getInitialState () {
 		return {
-			searchString: ''
+			searchString: '',
 		};
 	},
-
 	toggleCreate (visible) {
 		this.props.toggleCreate(visible);
 	},
-
 	searchStringChanged (event) {
 		this.setState({
-			searchString: event.target.value
+			searchString: event.target.value,
 		});
 	},
-
 	handleEscapeKey (event) {
 		const escapeKeyCode = 27;
 
@@ -36,7 +30,6 @@ var Header = React.createClass({
 			ReactDOM.findDOMNode(this.refs.searchField).blur();
 		}
 	},
-
 	renderDrilldown () {
 		return (
 			<Toolbar.Section left>
@@ -45,26 +38,25 @@ var Header = React.createClass({
 			</Toolbar.Section>
 		);
 	},
-
 	renderDrilldownItems () {
 
 		var list = this.props.list;
 		var items = this.props.data.drilldown ? this.props.data.drilldown.items : [];
 
-		var els = items.map(dd => {
+		var els = items.map((dd, i) => {
 			var links = [];
 
 			dd.items.forEach((el, i) => {
 				links.push(<a key={'dd' + i} href={el.href} title={dd.list.singular}>{el.label}</a>);
 				if (i < dd.items.length - 1) {
-					links.push(<span key={'ds' + i} className="separator">,</span>);//eslint-disable-line comma-spacing
+					links.push(<span key={'ds' + i} className="separator">,</span>); // eslint-disable-line comma-spacing
 				}
 			});
 
 			var more = dd.more ? <span>...</span> : '';
 
 			return (
-				<li>
+				<li key={`dd-${i}`}>
 					{links}
 					{more}
 				</li>
@@ -87,9 +79,7 @@ var Header = React.createClass({
 			);
 			return <ul className="item-breadcrumbs" key="drilldown">{els}</ul>;
 		}
-
 	},
-
 	renderSearch () {
 		var list = this.props.list;
 		return (
@@ -108,7 +98,6 @@ var Header = React.createClass({
 			</form>
 		);
 	},
-
 	renderInfo () {
 		return (
 			<Toolbar.Section right>
@@ -116,7 +105,6 @@ var Header = React.createClass({
 			</Toolbar.Section>
 		);
 	},
-
 	renderCreateButton () {
 		if (this.props.list.nocreate) return null;
 
@@ -133,7 +121,6 @@ var Header = React.createClass({
 			</Button>
 		);
 	},
-
 	render () {
 		return (
 			<Toolbar>
@@ -141,8 +128,7 @@ var Header = React.createClass({
 				{this.renderInfo()}
 			</Toolbar>
 		);
-	}
-
+	},
 });
 
 module.exports = Header;

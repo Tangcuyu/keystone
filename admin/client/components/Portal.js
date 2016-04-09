@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 
 module.exports = React.createClass({
 	displayName: 'Portal',
-	portalElement: null,
+	portalElement: null, // eslint-disable-line react/sort-comp
 	componentDidMount () {
 		let el = document.createElement('div');
 		document.body.appendChild(el);
@@ -21,5 +21,5 @@ module.exports = React.createClass({
 	},
 	render () {
 		return null;
-	}
+	},
 });

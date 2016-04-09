@@ -17,18 +17,18 @@ var Checkbox = React.createClass({
 			component: 'button',
 		};
 	},
-	componentDidMount () {
-		window.addEventListener('mouseup', this.handleMouseUp, false);
-	},
-	componentWillUnmount () {
-		window.removeEventListener('mouseup', this.handleMouseUp, false);
-	},
 	getInitialState () {
 		return {
 			active: null,
 			focus: null,
 			hover: null,
 		};
+	},
+	componentDidMount () {
+		window.addEventListener('mouseup', this.handleMouseUp, false);
+	},
+	componentWillUnmount () {
+		window.removeEventListener('mouseup', this.handleMouseUp, false);
 	},
 	getStyles () {
 		let { checked, readonly } = this.props;
@@ -148,7 +148,7 @@ var Checkbox = React.createClass({
 		let node = readonly ? 'span' : this.props.component;
 
 		return React.createElement(node, props);
-	}
+	},
 });
 
 module.exports = Checkbox;

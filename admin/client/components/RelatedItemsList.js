@@ -16,13 +16,13 @@ const RelatedItemsList = React.createClass({
 			items: null,
 		};
 	},
+	componentDidMount () {
+		this.loadItems();
+	},
 	getColumns () {
 		const { relationship, refList } = this.props;
 		const columns = refList.expandColumns(refList.defaultColumns);
 		return columns.filter(i => i.path !== relationship.refPath);
-	},
-	componentDidMount () {
-		this.loadItems();
 	},
 	loadItems () {
 		const { refList, relatedItemId, relationship } = this.props;
@@ -89,7 +89,7 @@ const RelatedItemsList = React.createClass({
 				{this.state.items ? this.renderItems() : <Spinner size="sm" />}
 			</div>
 		);
-	}
+	},
 });
 
 module.exports = RelatedItemsList;

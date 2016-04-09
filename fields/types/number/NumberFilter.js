@@ -4,10 +4,10 @@ import ReactDOM from 'react-dom';
 import { FormField, FormInput, FormRow, FormSelect } from 'elemental';
 
 const CONTROL_OPTIONS = [
-	{ label: 'Exactly', value: 'exactly' },
-	{ label: 'Greater Than', value: 'greaterThan' },
-	{ label: 'Less Than', value: 'lessThan' },
-	{ label: 'Between', value: 'between' }
+	{ label: 'Exactly', value: 'equals' },
+	{ label: 'Greater Than', value: 'gt' },
+	{ label: 'Less Than', value: 'lt' },
+	{ label: 'Between', value: 'between' },
 ];
 
 var NumberFilter = React.createClass({
@@ -16,7 +16,9 @@ var NumberFilter = React.createClass({
 		return {
 			modeValue: CONTROL_OPTIONS[0].value, // 'matches'
 			modeLabel: CONTROL_OPTIONS[0].label, // 'Matches'
-			value: ''
+			value: '',
+			minValue: '',
+			maxValue: '',
 		};
 	},
 
@@ -25,10 +27,48 @@ var NumberFilter = React.createClass({
 		ReactDOM.findDOMNode(this.refs.input).focus();
 	},
 
+	handleChangeBuilder (type) {
+		let self = this;
+		return function handleChange (e) {
+			let { value } = e.target;
+			let { modeValue } = self.state;
+			let { onChange } = self.props;
+			self.setState({
+				[type]: value,
+			});
+
+			switch (type) {
+				case 'minValue':
+					onChange({
+						mode: modeValue,
+						value: {
+							min: value,
+							max: self.state.maxValue,
+						},
+					});
+					break;
+				case 'maxValue':
+					onChange({
+						mode: modeValue,
+						value: {
+							max: value,
+							min: self.state.minValue,
+						},
+					});
+					break;
+				case 'value':
+					onChange({
+						mode: modeValue,
+						value,
+					});
+			}
+		};
+	},
+
 	toggleMode (mode) {
 		this.setState({
 			modeValue: mode,
-			modeLabel: CONTROL_OPTIONS.find(option => option.value === mode).label
+			modeLabel: CONTROL_OPTIONS.find(option => option.value === mode).label,
 		});
 
 		// focus the text input after a mode selection is made
@@ -45,17 +85,17 @@ var NumberFilter = React.createClass({
 			controls = (
 				<FormRow>
 					<FormField width="one-half" style={{ marginBottom: 0 }}>
-						<FormInput type="number" ref="input" placeholder="Min." />
+						<FormInput type="number" ref="input" placeholder="Min." onChange={this.handleChangeBuilder('minValue')} />
 					</FormField>
 					<FormField width="one-half" style={{ marginBottom: 0 }}>
-						<FormInput type="number" placeholder="Max." />
+						<FormInput type="number" placeholder="Max." onChange={this.handleChangeBuilder('maxValue')} />
 					</FormField>
 				</FormRow>
 			);
 		} else {
 			controls = (
 				<FormField>
-					<FormInput type="number" ref="input" placeholder={placeholder} />
+					<FormInput type="number" ref="input" placeholder={placeholder} onChange={this.handleChangeBuilder('value')} />
 				</FormField>
 			);
 		}
@@ -72,7 +112,7 @@ var NumberFilter = React.createClass({
 				{this.renderControls()}
 			</div>
 		);
-	}
+	},
 
 });
 

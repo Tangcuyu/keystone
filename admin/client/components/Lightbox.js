@@ -30,12 +30,12 @@ var Lightbox = React.createClass({
 	},
 	getInitialState () {
 		return {
-			currentImage: this.props.initialImage
+			currentImage: this.props.initialImage,
 		};
 	},
 	componentWillReceiveProps (nextProps) {
 		this.setState({
-			currentImage: nextProps.initialImage
+			currentImage: nextProps.initialImage,
 		});
 
 		if (nextProps.isOpen && nextProps.enableKeyboardInput) {
@@ -137,7 +137,7 @@ var Lightbox = React.createClass({
 				</Transition>
 			</Portal>
 		);
-	}
+	},
 });
 
 const styles = {
@@ -157,10 +157,10 @@ const styles = {
 
 		// disable user select
 		WebkitTouchCallout: 'none',
-		WebkitUserSelect:   'none',
-		MozUserSelect:      'none',
-		msUserSelect:       'none',
-		userSelect:         'none',
+		WebkitUserSelect: 'none',
+		MozUserSelect: 'none',
+		msUserSelect: 'none',
+		userSelect: 'none',
 	},
 	arrowNext: {
 		right: 0,
@@ -209,9 +209,9 @@ const styles = {
 		zIndex: 1001,
 
 		WebkitTransform: 'translateY(-50%)',
-		MozTransform:    'translateY(-50%)',
-		msTransform:     'translateY(-50%)',
-		transform:       'translateY(-50%)',
+		MozTransform: 'translateY(-50%)',
+		msTransform: 'translateY(-50%)',
+		transform: 'translateY(-50%)',
 	},
 	image: {
 		boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
@@ -223,16 +223,16 @@ const styles = {
 		left: '50%',
 		top: '50%',
 		WebkitTransform: 'translate(-50%, -50%)',
-		MozTransform:    'translate(-50%, -50%)',
-		msTransform:     'translate(-50%, -50%)',
-		transform:       'translate(-50%, -50%)',
+		MozTransform: 'translate(-50%, -50%)',
+		msTransform: 'translate(-50%, -50%)',
+		transform: 'translate(-50%, -50%)',
 
 		// disable user select
 		WebkitTouchCallout: 'none',
-		WebkitUserSelect:   'none',
-		MozUserSelect:      'none',
-		msUserSelect:       'none',
-		userSelect:         'none',
+		WebkitUserSelect: 'none',
+		MozUserSelect: 'none',
+		msUserSelect: 'none',
+		userSelect: 'none',
 
 	},
 };

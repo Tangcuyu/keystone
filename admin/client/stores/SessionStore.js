@@ -4,7 +4,7 @@ import Store from 'store-prototype';
 import xhr from 'xhr';
 
 var csrfHeaders = {
-	[Keystone.csrf_header_key]: Keystone.csrf_token_value
+	[Keystone.csrf_header_key]: Keystone.csrf_token_value,
 };
 
 let { user, adminPath } = Keystone;
@@ -27,7 +27,7 @@ var SessionStore = new Store({
 			url: `${adminPath}/api/session/signin`,
 			method: 'post',
 			json: options,
-			headers: csrfHeaders
+			headers: csrfHeaders,
 		}, callbackResponse(callback));
 	},
 	signout (callback) {
@@ -35,9 +35,9 @@ var SessionStore = new Store({
 		xhr({
 			url: `${adminPath}/api/session/signout`,
 			method: 'post',
-			json: {}
+			json: {},
 		}, callbackResponse(callback));
-	}
+	},
 });
 
 export default SessionStore;

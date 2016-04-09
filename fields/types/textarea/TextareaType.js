@@ -2,13 +2,14 @@ var FieldType = require('../Type');
 var TextType = require('../text/TextType');
 var util = require('util');
 var utils = require('keystone-utils');
+var validators = require('../validators');
 
 /**
  * Text FieldType Constructor
  * @extends Field
  * @api public
  */
-function textarea(list, path, options) {
+function textarea (list, path, options) {
 	this._nativeType = String;
 	this._underscoreMethods = ['format', 'crop'];
 	this.height = options.height || 90;
@@ -16,6 +17,10 @@ function textarea(list, path, options) {
 	textarea.super_.call(this, list, path, options);
 }
 util.inherits(textarea, FieldType);
+
+/* Use text validators */
+textarea.prototype.validateInput = validators.text.input;
+textarea.prototype.validateRequiredInput = validators.text.required;
 
 /* Inherit from TextType prototype */
 textarea.prototype.addFilterToQuery = TextType.prototype.addFilterToQuery;
@@ -25,7 +30,7 @@ textarea.prototype.crop = TextType.prototype.crop;
  * Formats the field value
  * @api public
  */
-textarea.prototype.format = function(item) {
+textarea.prototype.format = function (item) {
 	return utils.textToHTML(item.get(this.path));
 };
 

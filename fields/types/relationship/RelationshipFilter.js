@@ -19,11 +19,6 @@ function getDefaultValue () {
 }
 
 var RelationshipFilter = React.createClass({
-
-	statics: {
-		getDefaultValue: getDefaultValue,
-	},
-
 	propTypes: {
 		field: React.PropTypes.object,
 		filter: React.PropTypes.shape({
@@ -32,13 +27,14 @@ var RelationshipFilter = React.createClass({
 		}),
 		onHeightChange: React.PropTypes.func,
 	},
-
+	statics: {
+		getDefaultValue: getDefaultValue,
+	},
 	getDefaultProps () {
 		return {
 			filter: getDefaultValue(),
 		};
 	},
-
 	getInitialState () {
 		return {
 			searchIsLoading: false,
@@ -48,22 +44,18 @@ var RelationshipFilter = React.createClass({
 			valueIsLoading: true,
 		};
 	},
-
 	componentDidMount () {
 		this._itemsCache = {};
 		this.loadSearchResults(true);
 	},
-
 	componentWillReceiveProps (nextProps) {
 		if (nextProps.filter.value !== this.props.filter.value) {
 			this.populateValue(nextProps.filter.value);
 		}
 	},
-
 	isLoading () {
 		return this.state.searchIsLoading || this.state.valueIsLoading;
 	},
-
 	populateValue (value) {
 		async.map(value, (id, next) => {
 			if (this._itemsCache[id]) return next(null, this._itemsCache[id]);
@@ -71,9 +63,9 @@ var RelationshipFilter = React.createClass({
 				url: Keystone.adminPath + '/api/' + this.props.field.refList.path + '/' + id + '?basic',
 				responseType: 'json',
 			}, (err, resp, data) => {
-				if (err || !data) return done(err);
+				if (err || !data) return next(err);
 				this.cacheItem(data);
-				done(err, data);
+				next(err, data);
 			});
 		}, (err, items) => {
 			if (err) {
@@ -88,15 +80,27 @@ var RelationshipFilter = React.createClass({
 			});
 		});
 	},
-
 	cacheItem (item) {
 		this._itemsCache[item.id] = item;
 	},
+	buildFilters () {
+		var filters = {};
+		_.forEach(this.props.field.filters, function (value, key) {
+			filters[key] = value;
+		}, this);
 
+		var parts = [];
+		_.forEach(filters, function (val, key) {
+			parts.push('filters[' + key + '][value]=' + encodeURIComponent(val));
+		});
+
+		return parts.join('&');
+	},
 	loadSearchResults (thenPopulateValue) {
 		let searchString = this.state.searchString;
+		let filters = this.buildFilters();
 		xhr({
-			url: Keystone.adminPath + '/api/' + this.props.field.refList.path + '?basic&search=' + searchString,
+			url: Keystone.adminPath + '/api/' + this.props.field.refList.path + '?basic&search=' + searchString + '&' + filters,
 			responseType: 'json',
 		}, (err, resp, data) => {
 			if (err) {
@@ -118,35 +122,28 @@ var RelationshipFilter = React.createClass({
 			}, this.updateHeight);
 		});
 	},
-
 	updateHeight () {
 		if (this.props.onHeightChange) {
 			this.props.onHeightChange(this.refs.container.offsetHeight);
 		}
 	},
-
 	toggleInverted (inverted) {
 		this.updateFilter({ inverted });
 	},
-
 	updateSearch (e) {
 		this.setState({ searchString: e.target.value }, this.loadSearchResults);
 	},
-
 	selectItem (item) {
 		let value = this.props.filter.value.concat(item.id);
 		this.updateFilter({ value });
 	},
-
 	removeItem (item) {
 		let value = this.props.filter.value.filter(i => { return i !== item.id; });
 		this.updateFilter({ value });
 	},
-
 	updateFilter (value) {
 		this.props.onChange({ ...this.props.filter, ...value });
 	},
-
 	renderItems (items, selected) {
 		let itemIconHover = selected ? 'x' : 'check';
 
@@ -165,7 +162,6 @@ var RelationshipFilter = React.createClass({
 			);
 		});
 	},
-
 	render () {
 		let selectedItems = this.state.selectedItems;
 		let searchResults = this.state.searchResults.filter(i => {
@@ -194,8 +190,7 @@ var RelationshipFilter = React.createClass({
 				) : null}
 			</div>
 		);
-	}
-
+	},
 });
 
 module.exports = RelationshipFilter;

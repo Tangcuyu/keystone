@@ -18,7 +18,7 @@ var ListDownloadForm = React.createClass({
 			format: FORMAT_OPTIONS[0].value,
 			isOpen: false,
 			useCurrentColumns: true,
-			selectedColumns: this.getDefaultSelectedColumns()
+			selectedColumns: this.getDefaultSelectedColumns(),
 		};
 	},
 	getDefaultSelectedColumns () {
@@ -32,13 +32,13 @@ var ListDownloadForm = React.createClass({
 		return Keystone.list.uiElements.map((el) => {
 			return el.type === 'field' ? {
 				type: 'field',
-				field: Keystone.list.fields[el.field]
+				field: Keystone.list.fields[el.field],
 			} : el;
 		});
 	},
 	togglePopout (visible) {
 		this.setState({
-			isOpen: visible
+			isOpen: visible,
 		});
 	},
 	toggleColumn (column, value) {
@@ -49,27 +49,25 @@ var ListDownloadForm = React.createClass({
 			delete newColumns[column];
 		}
 		this.setState({
-			selectedColumns: newColumns
+			selectedColumns: newColumns,
 		});
 	},
 	changeFormat (value) {
 		this.setState({
-			format: value
+			format: value,
 		});
 	},
 	toggleCurrentlySelectedColumns (e) {
 		let newState = {
 			useCurrentColumns: e.target.checked,
-			selectedColumns: this.getDefaultSelectedColumns()
+			selectedColumns: this.getDefaultSelectedColumns(),
 		};
 		this.setState(newState);
 	},
-
 	handleDownloadRequest () {
 		CurrentListStore.downloadItems(this.state.format, Object.keys(this.state.selectedColumns));
 		this.togglePopout(false);
 	},
-
 	renderColumnSelect () {
 		if (this.state.useCurrentColumns) return null;
 
@@ -98,7 +96,6 @@ var ListDownloadForm = React.createClass({
 			</div>
 		);
 	},
-
 	render () {
 		let { useCurrentColumns } = this.state;
 
@@ -117,7 +114,7 @@ var ListDownloadForm = React.createClass({
 								<SegmentedControl equalWidthSegments options={FORMAT_OPTIONS} value={this.state.format} onChange={this.changeFormat} />
 							</FormField>
 							<FormField label="Columns:">
-								<Checkbox autofocus label="Use currently selected" onChange={this.toggleCurrentlySelectedColumns} value={true} checked={useCurrentColumns} />
+								<Checkbox autofocus label="Use currently selected" onChange={this.toggleCurrentlySelectedColumns} value checked={useCurrentColumns} />
 							</FormField>
 							{this.renderColumnSelect()}
 						</Form>
@@ -130,8 +127,7 @@ var ListDownloadForm = React.createClass({
 				</Popout>
 			</InputGroup.Section>
 		);
-	}
-
+	},
 });
 
 module.exports = ListDownloadForm;

@@ -1,4 +1,5 @@
 import React from 'react';
+import { findDOMNode } from 'react-dom';
 import moment from 'moment';
 import ConfirmationDialog from './ConfirmationDialog';
 import Fields from '../fields';
@@ -7,6 +8,10 @@ import AltText from './AltText';
 import FooterBar from './FooterBar';
 import InvalidFieldType from './InvalidFieldType';
 import { Button, Col, Form, FormField, FormInput, ResponsiveText, Row } from 'elemental';
+
+function upCase (str) {
+	return str.slice(0, 1).toUpperCase() + str.substr(1).toLowerCase();
+};
 
 var EditForm = React.createClass({
 	displayName: 'EditForm',
@@ -17,7 +22,7 @@ var EditForm = React.createClass({
 	getInitialState () {
 		return {
 			values: Object.assign({}, this.props.data.fields),
-			confirmationDialog: null
+			confirmationDialog: null,
 		};
 	},
 	getFieldProps (field) {
@@ -34,39 +39,34 @@ var EditForm = React.createClass({
 		values[event.path] = event.value;
 		this.setState({ values });
 	},
-
-	confirmReset(event) {
+	confirmReset (event) {
 		const confirmationDialog = (
 			<ConfirmationDialog
+				isOpen
 				body={`Reset your changes to <strong>${this.props.data.name}</strong>?`}
 				confirmationLabel="Reset"
 				onCancel={this.removeConfirmationDialog}
 				onConfirmation={this.handleReset}
 			/>
 		);
-
 		event.preventDefault();
-
 		this.setState({ confirmationDialog });
 	},
-
 	handleReset () {
 		window.location.reload();
 	},
-
-	confirmDelete() {
+	confirmDelete () {
 		const confirmationDialog = (
 			<ConfirmationDialog
+				isOpen
 				body={`Are you sure you want to delete <strong>${this.props.data.name}?</strong><br /><br />This cannot be undone.`}
 				confirmationLabel="Delete"
 				onCancel={this.removeConfirmationDialog}
 				onConfirmation={this.handleDelete}
 			/>
 		);
-
 		this.setState({ confirmationDialog });
 	},
-
 	handleDelete () {
 		let { data, list } = this.props;
 		list.deleteItem(data.id, err => {
@@ -78,37 +78,56 @@ var EditForm = React.createClass({
 			top.location.href = `${Keystone.adminPath}/${list.path}`;
 		});
 	},
-
+	handleKeyFocus () {
+		const input = findDOMNode(this.refs.keyOrIdInput);
+		input.select();
+	},
 	removeConfirmationDialog () {
 		this.setState({
-			confirmationDialog: null
+			confirmationDialog: null,
 		});
 	},
-
 	renderKeyOrId () {
 		var className = 'EditForm__key-or-id';
 		var list = this.props.list;
 
 		if (list.nameField && list.autokey && this.props.data[list.autokey.path]) {
 			return (
-				<AltText
-					normal={list.autokey.path + ': ' + this.props.data[list.autokey.path]}
-					modified={'ID: ' + String(this.props.data.id)}
-					component="div"
-					title="Press <alt> to reveal the ID"
-					className={className} />
+				<div className={className}>
+					<AltText
+						normal={`${upCase(list.autokey.path)}: `}
+						modified="ID:"
+						component="span"
+						title="Press <alt> to reveal the ID"
+						className="EditForm__key-or-id__label" />
+					<AltText
+						normal={<input ref="keyOrIdInput" onFocus={this.handleKeyFocus} value={this.props.data[list.autokey.path]} className="EditForm__key-or-id__input" readOnly />}
+						modified={<input ref="keyOrIdInput" onFocus={this.handleKeyFocus} value={this.props.data.id} className="EditForm__key-or-id__input" readOnly />}
+						component="span"
+						title="Press <alt> to reveal the ID"
+						className="EditForm__key-or-id__field" />
+				</div>
 			);
 		} else if (list.autokey && this.props.data[list.autokey.path]) {
 			return (
-				<div className={className}>{list.autokey.path}: {this.props.data[list.autokey.path]}</div>
+				<div className={className}>
+					<span className="EditForm__key-or-id__label">{list.autokey.path}: </span>
+					<div className="EditForm__key-or-id__field">
+						<input ref="keyOrIdInput" onFocus={this.handleKeyFocus} value={this.props.data[list.autokey.path]} className="EditForm__key-or-id__input" readOnly />
+					</div>
+				</div>
 			);
 		} else if (list.nameField) {
 			return (
-				<div className={className}>id: {this.props.data.id}</div>
+				<div className={className}>
+					<span className="EditForm__key-or-id__label">ID: </span>
+					<div className="EditForm__key-or-id__field">
+						<input ref="keyOrIdInput" onFocus={this.handleKeyFocus} value={this.props.data.id} className="EditForm__key-or-id__input" readOnly />
+					</div>
+				</div>
 			);
 		}
 	},
-
 	renderNameField () {
 		var nameField = this.props.list.nameField;
 		var nameIsEditable = this.props.list.nameIsEditable;
@@ -135,7 +154,6 @@ var EditForm = React.createClass({
 			);
 		}
 	},
-
 	renderFormElements () {
 		var headings = 0;
 
@@ -150,7 +168,7 @@ var EditForm = React.createClass({
 			if (el.type === 'field') {
 				var field = this.props.list.fields[el.field];
 				var props = this.getFieldProps(field);
-				if ('function' !== typeof Fields[field.type]) {
+				if (typeof Fields[field.type] !== 'function') {
 					return React.createElement(InvalidFieldType, { type: field.type, path: field.path, key: field.path });
 				}
 				if (props.dependsOn) {
@@ -164,10 +182,9 @@ var EditForm = React.createClass({
 			}
 		}, this);
 	},
-
 	renderFooterBar () {
 		var buttons = [
-			<Button key="save" type="primary" submit>Save</Button>
+			<Button key="save" type="primary" submit>Save</Button>,
 		];
 		buttons.push(
 			<Button key="reset" onClick={this.confirmReset} type="link-cancel">
@@ -187,7 +204,6 @@ var EditForm = React.createClass({
 			</FooterBar>
 		);
 	},
-
 	renderTrackingMeta () {
 		if (!this.props.list.tracking) return null;
 
@@ -246,7 +262,6 @@ var EditForm = React.createClass({
 			</div>
 		) : null;
 	},
-
 	render () {
 		return (
 			<form method="post" encType="multipart/form-data" className="EditForm-container">
@@ -267,8 +282,7 @@ var EditForm = React.createClass({
 				{this.state.confirmationDialog}
 			</form>
 		);
-	}
-
+	},
 });
 
 module.exports = EditForm;
